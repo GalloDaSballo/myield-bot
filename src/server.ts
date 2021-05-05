@@ -694,19 +694,20 @@ const CONTRACT_ADDRESS = "0x9dB2A331fbD4cEA56450f3A0a9b983bC52ec7387";
 const WALLET_PK = process.env.PK;
 const { BLOCKVIGIL_KEY } = process.env;
 
-/** Once every 30 mins */
+/** Once every 15 mins */
 cron.schedule("*/15 * * * *", async () => {
   console.log("Every 15 minutes");
-  try {
-    const wallet = new Wallet(
-      WALLET_PK,
-      new providers.JsonRpcProvider(BLOCKVIGIL_KEY)
-    );
-    const contract = new Contract(CONTRACT_ADDRESS, CONTRACT_ABI, wallet);
+  const wallet = new Wallet(
+    WALLET_PK,
+    new providers.JsonRpcProvider(BLOCKVIGIL_KEY)
+  );
+  const contract = new Contract(CONTRACT_ADDRESS, CONTRACT_ABI, wallet);
 
+  /** Reinvest Rewards */
+  try {
     // Check rewards balance
     const balance = await contract.getRewardsBalance();
-    console.log("balance", balance);
+    console.log("balance", balance.toString());
 
     if (balance.gt(utils.parseUnits("0.5", "ether"))) {
       console.log("Reinvesting");
@@ -719,6 +720,25 @@ cron.schedule("*/15 * * * *", async () => {
       console.log("Not enough to warrant reinvesting");
     }
   } catch (err) {
-    console.log("Exception", err);
+    console.log("Exception in reinvestRewards", err);
+  }
+
+  /** Rebalance TODO: Calculate actual APR to decide if it's worth investing or not */
+  try {
+    const canBorrow = await contract.canBorrow();
+    console.log("canBorrow", canBorrow.toString());
+
+    if (canBorrow.gt(utils.parseUnits("5", "ether"))) {
+      console.log("Worth rebalancing");
+      const rebalance = await (
+        await contract.rebalance({ gasLimit: 6000000 })
+      ).wait();
+
+      console.log("rebalance tx", rebalance.transactionHash);
+    } else {
+      console.log("Already properly leveraged");
+    }
+  } catch (err) {
+    console.log("Exception in rebalance", err);
   }
 });
