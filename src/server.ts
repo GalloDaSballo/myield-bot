@@ -60,9 +60,9 @@ cron.schedule("*/15 * * * *", async () => {
   }
 });
 
-/** Once every 15 mins */
-cron.schedule("*/15 * * * *", async () => {
-  console.log("Every 15 minutes");
+/** Once every 2 mins */
+cron.schedule("*/2 * * * *", async () => {
+  console.log("Every 2 minutes");
   const wallet = new Wallet(
     WALLET_PK,
     new providers.JsonRpcProvider(BLOCKVIGIL_KEY)
