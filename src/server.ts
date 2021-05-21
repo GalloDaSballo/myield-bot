@@ -1,111 +1,99 @@
 import cron from "node-cron";
-import { Contract, providers, utils, Wallet } from "ethers";
+import { BigNumber, Contract, providers, Wallet } from "ethers";
 import dotenv from "dotenv";
 
-import ContactV1 from "./deployments/Myield.json";
-import ContractV2 from "./deployments/MyieldWMatic.json";
+import vaults, { VAULT_ABI, STRAT_ABI } from "./vaults";
+import { MyieldVault } from "./MyieldVault";
+import { AAVEUSDCRewards } from "./AAVEUSDCRewards";
+import { Vault } from "./types";
+
+const MIN_MATIC_USD = "873508868000000000";
+const MIN_MATIC_BTC = "38530670500000000000000";
+
+const MIN_PRICE = {
+  USDC: MIN_MATIC_USD,
+  WBTC: MIN_MATIC_BTC,
+};
 
 dotenv.config();
 
 const WALLET_PK = process.env.PK;
 const { BLOCKVIGIL_KEY } = process.env;
 
-/** Once every 15 mins */
-cron.schedule("*/15 * * * *", async () => {
-  console.log("Every 15 minutes");
-  const wallet = new Wallet(
-    WALLET_PK,
-    new providers.JsonRpcProvider(BLOCKVIGIL_KEY)
-  );
-  const v1 = new Contract(ContactV1.address, ContactV1.abi, wallet);
+// 0.0025 // With 100$ this should happens at least 20 times a day
+const MIN_REWARDS = BigNumber.from("2500000000000000");
+const wallet = new Wallet(
+  WALLET_PK,
+  new providers.JsonRpcProvider(BLOCKVIGIL_KEY)
+);
 
-  console.log("V1");
-  /** Reinvest Rewards */
+const checkVault = async (vault: Vault) => {
+  const vaultContract = new Contract(
+    vault.address,
+    VAULT_ABI,
+    wallet
+  ) as MyieldVault;
+  const stratContract = new Contract(
+    vault.rewardsStrat,
+    STRAT_ABI,
+    wallet
+  ) as AAVEUSDCRewards;
+  console.log("Vault", vault.name);
+  console.log("/** CHECK DEPOSITS **/");
   try {
-    // Check rewards balance
-    const balance = await v1.getRewardsBalance();
-    console.log("balance", balance.toString());
-
-    if (balance.gt(utils.parseUnits("0.5", "ether"))) {
-      console.log("Reinvesting");
-      const reinvest = await (
-        await v1.reinvestRewards({ gasLimit: 600000 })
+    const balanceInContract = await vaultContract.balanceOfWant();
+    console.log("balanceInContract", balanceInContract.toString());
+    if (balanceInContract.gt(0)) {
+      // Deposit in Strat
+      const depositTx = await (
+        await stratContract.deposit(balanceInContract, {
+          gasLimit: 5000000,
+        })
       ).wait();
-
-      console.log("reinvest tx", reinvest.transactionHash);
-    } else {
-      console.log("Not enough to warrant reinvesting");
+      console.log("depositTx", depositTx.transactionHash);
     }
   } catch (err) {
-    console.log("Exception in reinvestRewards", err);
+    console.log("Exception in check deposits", err);
   }
 
-  /** Rebalance TODO: Calculate actual APR to decide if it's worth investing or not */
+  console.log("/** CHECK HARVEST **/");
   try {
-    const canBorrow = await v1.canBorrow();
-    console.log("canBorrow", canBorrow.toString());
+    const currentRewards = await stratContract.getRewardsAmount();
+    console.log("currentRewards", currentRewards.toString());
+    if (currentRewards.gt(MIN_REWARDS)) {
+      console.log("Will harvest");
+      // Get price quote
 
-    if (canBorrow.gt(utils.parseUnits("5", "ether"))) {
-      console.log("Worth rebalancing");
-      const rebalance = await (
-        await v1.rebalance({ gasLimit: 6000000 })
+      // Ask for harvest
+      const harvestTx = await (
+        await stratContract.harvest(MIN_PRICE[vault.want.symbol])
       ).wait();
+      console.log("harvestTx", harvestTx.transactionHash);
+    }
+  } catch (err) {
+    console.log("Exception in harvest", err);
+  }
 
-      console.log("rebalance tx", rebalance.transactionHash);
-    } else {
-      console.log("Already properly leveraged");
+  console.log("/** CHECK REBALANCE **/");
+  try {
+    const shouldInvest = await stratContract.shouldInvest();
+    console.log("shouldInvest", shouldInvest);
+    if (shouldInvest) {
+      const investTx = await (await stratContract.invest()).wait();
+      console.log("investTx", investTx.transactionHash);
     }
   } catch (err) {
     console.log("Exception in rebalance", err);
   }
-});
+};
 
-/** Once every 2 mins */
-cron.schedule("*/2 * * * *", async () => {
-  console.log("Every 2 minutes");
-  const wallet = new Wallet(
-    WALLET_PK,
-    new providers.JsonRpcProvider(BLOCKVIGIL_KEY)
-  );
-  const v2 = new Contract(ContractV2.address, ContractV2.abi, wallet);
+/** Once every 5 mins */
+cron.schedule("*/5 * * * *", async () => {
+  console.log("Every 5 minutes");
 
-  console.log("V2");
-  /** Reinvest Rewards */
-  try {
-    // Check rewards balance
-    const balance = await v2.getRewardsBalance();
-    console.log("balance", balance.toString());
-
-    if (balance.gt(utils.parseUnits("0.5", "ether"))) {
-      console.log("Reinvesting");
-      const reinvest = await (
-        await v2.reinvestRewards({ gasLimit: 600000 })
-      ).wait();
-
-      console.log("reinvest tx", reinvest.transactionHash);
-    } else {
-      console.log("Not enough to warrant reinvesting");
-    }
-  } catch (err) {
-    console.log("Exception in reinvestRewards", err);
-  }
-
-  /** Rebalance TODO: Calculate actual APR to decide if it's worth investing or not */
-  try {
-    const canBorrow = await v2.canBorrow();
-    console.log("canBorrow", canBorrow.toString());
-
-    if (canBorrow.gt(utils.parseUnits("5", "ether"))) {
-      console.log("Worth rebalancing");
-      const rebalance = await (
-        await v2.rebalance({ gasLimit: 6000000 })
-      ).wait();
-
-      console.log("rebalance tx", rebalance.transactionHash);
-    } else {
-      console.log("Already properly leveraged");
-    }
-  } catch (err) {
-    console.log("Exception in rebalance", err);
+  const vaultsToLoop = [...vaults];
+  while (vaultsToLoop.length) {
+    // eslint-ignore-next-line
+    await checkVault(vaultsToLoop.shift());
   }
 });
