@@ -93,7 +93,7 @@ cron.schedule("*/5 * * * *", async () => {
 
   const vaultsToLoop = [...vaults];
   while (vaultsToLoop.length) {
-    // eslint-ignore-next-line
+    // eslint-disable-next-line no-await-in-loop
     await checkVault(vaultsToLoop.shift());
   }
 });
