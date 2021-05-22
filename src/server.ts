@@ -20,8 +20,8 @@ dotenv.config();
 const WALLET_PK = process.env.PK;
 const { BLOCKVIGIL_KEY } = process.env;
 
-// 0.0025 // With 100$ this should happens at least 20 times a day
-const MIN_REWARDS = BigNumber.from("2500000000000000");
+// 0.025 // With 3500$ this should happens over 40 times a day
+const MIN_REWARDS = BigNumber.from("25000000000000000");
 const wallet = new Wallet(
   WALLET_PK,
   new providers.JsonRpcProvider(BLOCKVIGIL_KEY)
