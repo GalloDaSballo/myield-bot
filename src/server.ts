@@ -66,7 +66,9 @@ const checkVault = async (vault: Vault) => {
 
       // Ask for harvest
       const harvestTx = await (
-        await stratContract.harvest(MIN_PRICE[vault.want.symbol])
+        await stratContract.harvest(MIN_PRICE[vault.want.symbol], {
+          gasLimit: 5000000,
+        })
       ).wait();
       console.log("harvestTx", harvestTx.transactionHash);
     }
@@ -79,7 +81,11 @@ const checkVault = async (vault: Vault) => {
     const shouldInvest = await stratContract.shouldInvest();
     console.log("shouldInvest", shouldInvest);
     if (shouldInvest) {
-      const investTx = await (await stratContract.invest()).wait();
+      const investTx = await (
+        await stratContract.invest({
+          gasLimit: 5000000,
+        })
+      ).wait();
       console.log("investTx", investTx.transactionHash);
     }
   } catch (err) {
