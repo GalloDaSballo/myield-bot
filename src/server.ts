@@ -7,7 +7,7 @@ import { MyieldVault } from "./MyieldVault";
 import { AAVEUSDCRewards } from "./AAVEUSDCRewards";
 import { Vault } from "./types";
 
-const MIN_MATIC_USD = "873508868000000000";
+const MIN_MATIC_USD = "1211284320000000000";
 const MIN_MATIC_BTC = "38530670500000000000000";
 
 const MIN_PRICE = {
