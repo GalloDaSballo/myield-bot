@@ -14,7 +14,7 @@ const MIN_MATIC_USD = "1515151520000000000"; // Higher = Matic goes down
 const MIN_MATIC_BTC = "38530670500000000000000";
 
 const MIN_TO_SWAP = "1000"; // 0.1 USDC
-const MIN_TO_REDISTRIBUTE = "100"; // 100 sats, about 3 cents
+const MIN_TO_REDISTRIBUTE = "1000"; // 100 sats, about 30 cents
 
 const MIN_PRICE = {
   USDC: MIN_MATIC_USD,
