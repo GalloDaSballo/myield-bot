@@ -8,7 +8,7 @@ import { DCAVault } from "./types";
 import { MyieldDCAVault } from "./MyieldDCAVault";
 
 const MIN_MATIC_USD = "1515151520000000000"; // Higher = Matic goes down
-const MIN_MATIC_BTC = "4057270000000000000000000";
+const MIN_MATIC_BTC = "4572700000000000000000000";
 
 const MIN_TO_SWAP = "1000"; // 0.1 USDC
 const MIN_TO_REDISTRIBUTE = "1000"; // 100 sats, about 30 cents
