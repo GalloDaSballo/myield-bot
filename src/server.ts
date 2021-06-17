@@ -76,21 +76,22 @@ const checkVault = async (vault: Vault) => {
     console.log("Exception in harvest", err);
   }
 
-  console.log("/** CHECK REBALANCE **/");
-  try {
-    const shouldInvest = await stratContract.shouldInvest();
-    console.log("shouldInvest", shouldInvest);
-    if (shouldInvest) {
-      const investTx = await (
-        await stratContract.invest({
-          gasLimit: 5000000,
-        })
-      ).wait();
-      console.log("investTx", investTx.transactionHash);
-    }
-  } catch (err) {
-    console.log("Exception in rebalance", err);
-  }
+  // console.log("/** CHECK REBALANCE **/");
+  // No longer leverage
+  // try {
+  //   const shouldInvest = await stratContract.shouldInvest();
+  //   console.log("shouldInvest", shouldInvest);
+  //   if (shouldInvest) {
+  //     const investTx = await (
+  //       await stratContract.invest({
+  //         gasLimit: 5000000,
+  //       })
+  //     ).wait();
+  //     console.log("investTx", investTx.transactionHash);
+  //   }
+  // } catch (err) {
+  //   console.log("Exception in rebalance", err);
+  // }
 };
 
 /** Once every 5 mins */
