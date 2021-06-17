@@ -41,23 +41,23 @@ cron.schedule("*/15 * * * *", async () => {
   }
 
   /** Rebalance TODO: Calculate actual APR to decide if it's worth investing or not */
-  try {
-    const canBorrow = await v1.canBorrow();
-    console.log("canBorrow", canBorrow.toString());
+  // try {
+  //   const canBorrow = await v1.canBorrow();
+  //   console.log("canBorrow", canBorrow.toString());
 
-    if (canBorrow.gt(utils.parseUnits("5", "ether"))) {
-      console.log("Worth rebalancing");
-      const rebalance = await (
-        await v1.rebalance({ gasLimit: 6000000 })
-      ).wait();
+  //   if (canBorrow.gt(utils.parseUnits("5", "ether"))) {
+  //     console.log("Worth rebalancing");
+  //     const rebalance = await (
+  //       await v1.rebalance({ gasLimit: 6000000 })
+  //     ).wait();
 
-      console.log("rebalance tx", rebalance.transactionHash);
-    } else {
-      console.log("Already properly leveraged");
-    }
-  } catch (err) {
-    console.log("Exception in rebalance", err);
-  }
+  //     console.log("rebalance tx", rebalance.transactionHash);
+  //   } else {
+  //     console.log("Already properly leveraged");
+  //   }
+  // } catch (err) {
+  //   console.log("Exception in rebalance", err);
+  // }
 });
 
 /** Once every 2 mins */
@@ -91,21 +91,21 @@ cron.schedule("*/2 * * * *", async () => {
   }
 
   /** Rebalance TODO: Calculate actual APR to decide if it's worth investing or not */
-  try {
-    const canBorrow = await v2.canBorrow();
-    console.log("canBorrow", canBorrow.toString());
+  // try {
+  //   const canBorrow = await v2.canBorrow();
+  //   console.log("canBorrow", canBorrow.toString());
 
-    if (canBorrow.gt(utils.parseUnits("5", "ether"))) {
-      console.log("Worth rebalancing");
-      const rebalance = await (
-        await v2.rebalance({ gasLimit: 6000000 })
-      ).wait();
+  //   if (canBorrow.gt(utils.parseUnits("5", "ether"))) {
+  //     console.log("Worth rebalancing");
+  //     const rebalance = await (
+  //       await v2.rebalance({ gasLimit: 6000000 })
+  //     ).wait();
 
-      console.log("rebalance tx", rebalance.transactionHash);
-    } else {
-      console.log("Already properly leveraged");
-    }
-  } catch (err) {
-    console.log("Exception in rebalance", err);
-  }
+  //     console.log("rebalance tx", rebalance.transactionHash);
+  //   } else {
+  //     console.log("Already properly leveraged");
+  //   }
+  // } catch (err) {
+  //   console.log("Exception in rebalance", err);
+  // }
 });
