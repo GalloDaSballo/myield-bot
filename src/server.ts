@@ -8,8 +8,7 @@ import { DCAVault } from "./types";
 import { MyieldDCAVault } from "./MyieldDCAVault";
 
 const MIN_MATIC_USD = "1515151520000000000"; // Higher = Matic goes down
-const MIN_MATIC_BTC = "4572700000000000000000000";
-
+const MIN_MATIC_BTC = "457270000000000000000000";
 const MIN_TO_SWAP = "1000"; // 0.1 USDC
 const MIN_TO_REDISTRIBUTE = "1000"; // 100 sats, about 30 cents
 
@@ -57,9 +56,13 @@ const checkDCAVault = async (vault: DCAVault) => {
       const price = MIN_PRICE[vault.need.symbol];
       console.log("swap price", price);
 
-      const swapTx = await (
-        await vaultContract.swapToNeed(MIN_PRICE[vault.need.symbol])
-      ).wait();
+      const expectedBTCFromUSDC = await stratContract.getMinOutputAmount(
+        toSwap,
+        price
+      );
+      console.log("expectedBTCFromUSDC", expectedBTCFromUSDC.toString());
+
+      const swapTx = await (await vaultContract.swapToNeed(price)).wait();
       console.log("swapTx", swapTx.transactionHash);
     }
   } catch (err) {
@@ -144,9 +147,9 @@ const checkDCAVault = async (vault: DCAVault) => {
   }
 };
 
-/** Once every 2 mins */
-cron.schedule("*/1 * * * *", async () => {
-  console.log("Every 1 minutes, for dcaVaults");
+/** Once every 5 mins */
+cron.schedule("/5 * * * *", async () => {
+  console.log("Every 5 minutes, for dcaVaults");
 
   const dcaVaultsToLoop = [...dcaVaults];
   while (dcaVaultsToLoop.length) {

@@ -11,7 +11,7 @@
   "license": "MIT",
   "scripts": {
     "start": "node lib/server",
-    "dev": "nodemon src/server.ts",
+    "dev": "yarn build && yarn start",
     "build": "tsc",
     "test": "jest",
     "lint": "eslint src/. --ext ts --ext tsx --ext js",
